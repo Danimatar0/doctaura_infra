@@ -1,0 +1,62 @@
+services:
+  postgres-db: # Example. Remove before using.
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    networks:
+      - local_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak
+    environment:
+      KC_HOSTNAME: keycloak.danmtech.com
+      KC_HOSTNAME_STRICT: "true"
+      KC_PROXY: "edge"
+      KC_HTTP_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-db:5432/auth
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: admin
+      KC_SPI_THEME_STATIC_MAX_AGE: -1
+      KC_SPI_THEME_CACHE_THEMES: "false"
+      KC_SPI_THEME_CACHE_TEMPLATES: "false"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    command: ["start", "--proxy=edge", "--hostname=keycloak.danmtech.com", "--http-enabled=true", "--http-port=7080"]
+    volumes: # Ignore if you don't have realm-export.json to migrate data
+      - ../keycloak/realm/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ../keycloak/themes:/opt/keycloak/themes
+    ports:
+      - "7080:7080"
+    networks:
+      - local_network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+networks:
+  local_network:
+    driver: bridge
+volumes:
+  postgres_data:
+    driver: local
