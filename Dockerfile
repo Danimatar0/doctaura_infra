@@ -10,4 +10,4 @@ EXPOSE 7080
 
 # Set the entrypoint command
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
-CMD ["start", "--proxy=edge", "--http-enabled=true", "--http-port=7080"]
+CMD ["start", "--proxy=edge", "--http-enabled=true", "--http-port=7080", "--http-host=0.0.0.0"]
