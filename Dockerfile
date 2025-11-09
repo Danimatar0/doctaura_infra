@@ -2,6 +2,9 @@
 FROM quay.io/keycloak/keycloak:24.0 as builder
 ENV KC_DB=postgres
 
+COPY keycloak/providers /opt/keycloak/providers
+
+
 RUN /opt/keycloak/bin/kc.sh build
 
 # Production stage
@@ -9,7 +12,6 @@ FROM quay.io/keycloak/keycloak:24.0
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 COPY keycloak/themes /opt/keycloak/themes
-COPY keycloak/providers /opt/keycloak/providers
 COPY keycloak/realm/realm-export.json /opt/keycloak/data/import/realm-export.json
 
 EXPOSE 7080
