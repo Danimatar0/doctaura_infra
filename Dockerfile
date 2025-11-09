@@ -1,5 +1,6 @@
 # Builder stage
 FROM quay.io/keycloak/keycloak:24.0 as builder
+ENV KC_DB=postgres
 
 RUN /opt/keycloak/bin/kc.sh build
 
