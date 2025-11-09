@@ -1,10 +1,6 @@
 # Builder stage
 FROM quay.io/keycloak/keycloak:24.0 as builder
 
-ENV KC_DB=postgres
-ENV KC_HTTP_RELATIVE_PATH=/
-
-
 RUN /opt/keycloak/bin/kc.sh build
 
 # Production stage
