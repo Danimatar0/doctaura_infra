@@ -9,7 +9,7 @@ FROM quay.io/keycloak/keycloak:24.0
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 COPY keycloak/themes /opt/keycloak/themes
-COPY keycloak/standalone/deployments /opt/keycloak/standalone/deployments
+COPY keycloak/providers /opt/keycloak/providers
 COPY keycloak/realm/realm-export.json /opt/keycloak/data/import/realm-export.json
 
 EXPOSE 7080
