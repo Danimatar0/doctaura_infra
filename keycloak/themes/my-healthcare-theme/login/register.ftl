@@ -40,10 +40,13 @@
             </div>
         </div>
 
-        <form id="kc-register-form" action="${url.registrationAction}" method="post">
+        <form id="kc-register-form" action="${url.registrationAction}" method="post" enctype="multipart/form-data">
             
             <!-- Hidden field for role - will be set by JavaScript -->
             <input type="hidden" id="role-input" name="user.attributes.role" value="patient" />
+            
+            <!-- Hidden field for medical certification (base64) -->
+            <input type="hidden" id="medical-cert-data" name="user.attributes.medicalCertificationFile" value="" />
 
             <!-- STEP 1: Account Information -->
             <div class="form-step active" data-step="1">
@@ -143,14 +146,27 @@
                     </div>
                 </div>
 
-                <!-- Country -->
+                <!-- Country (Loaded from API) -->
                 <div style="margin-bottom: 1.25rem;">
                     <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                         <span style="color: #ef4444;">*</span> Country
                     </label>
-                    <input type="text" name="user.attributes.country" 
-                           style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;" 
-                           required />
+                    <select id="country-select" name="user.attributes.country" 
+                            style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;" 
+                            required>
+                        <option value="">Loading countries...</option>
+                    </select>
+                </div>
+
+                <!-- Address -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                        Address (Optional)
+                    </label>
+                    <textarea name="user.attributes.address" 
+                              rows="3"
+                              placeholder="Street address, City, Postal Code"
+                              style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; resize: vertical; font-family: inherit;"></textarea>
                 </div>
             </div>
 
@@ -185,8 +201,10 @@
                         <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                             <span style="color: #ef4444;">*</span> Medical Specialty
                         </label>
-                        <input type="text" name="user.attributes.specialty" 
-                               style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;" />
+                        <select id="specialty-select" name="user.attributes.specialty" 
+                                style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;">
+                            <option value="">Loading specialties...</option>
+                        </select>
                     </div>
 
                     <div style="margin-bottom: 1.25rem;">
@@ -194,7 +212,24 @@
                             <span style="color: #ef4444;">*</span> Medical Certification Number
                         </label>
                         <input type="text" name="user.attributes.medicalCertification" 
+                               placeholder="e.g., MC123456"
                                style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;" />
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                            <span style="color: #ef4444;">*</span> Upload Medical Certification
+                        </label>
+                        <div style="position: relative;">
+                            <input type="file" 
+                                   id="medical-cert-upload" 
+                                   accept=".pdf,.doc,.docx"
+                                   style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; cursor: pointer;" />
+                            <p id="file-upload-info" style="font-size: 0.75rem; color: #6b7280; margin: 0.5rem 0 0 0;">
+                                Accepted formats: PDF, DOC, DOCX (Max 5MB)
+                            </p>
+                            <p id="file-upload-error" style="font-size: 0.75rem; color: #ef4444; margin: 0.5rem 0 0 0; display: none;"></p>
+                        </div>
                     </div>
                 </div>
 
