@@ -34,6 +34,38 @@
         // ... minimal fallback list
     ];
 
+    // Security check - validate legitimate client access
+    function validateClientAccess() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const clientId = urlParams.get('client_id');
+        const codeChallenge = urlParams.get('code_challenge');
+        const kcRole = urlParams.get('kc_role');
+        
+        // Check if this is a legitimate client application request
+        // Must have client_id, code_challenge (PKCE), and kc_role
+        const isLegitimateClientRequest = clientId && codeChallenge && kcRole;
+        
+        if (!isLegitimateClientRequest) {
+            // Hide registration form
+            const registrationContainer = document.getElementById('registration-form-container');
+            if (registrationContainer) {
+                registrationContainer.style.display = 'none';
+            }
+            
+            // Show unauthorized access message
+            const unauthorizedContainer = document.getElementById('unauthorized-access');
+            if (unauthorizedContainer) {
+                unauthorizedContainer.style.display = 'block';
+            }
+            
+            console.error('Unauthorized registration attempt detected - missing required PKCE parameters');
+            return false;
+        }
+        
+        console.log('Legitimate client request validated - registration enabled');
+        return true;
+    }
+
     async function loadCountries() {
         const countrySelect = document.querySelector('select[name="user.attributes.country"]');
         if (!countrySelect) return;
@@ -368,6 +400,15 @@
     window.changeStep = changeStep;
 
     function init() {
+
+        // First, validate client access
+        const hasAccess = validateClientAccess();
+        
+        if (!hasAccess) {
+            console.warn('Registration blocked - unauthorized access attempt');
+            return; // Stop initialization if access is not legitimate
+        }
+        
         initializeRole();  // Initialize role first
         initializeFileUpload(); // Setup file upload handler
         loadCountries();    // Load countries from API
