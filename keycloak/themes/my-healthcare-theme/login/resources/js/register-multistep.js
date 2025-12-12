@@ -75,6 +75,27 @@ function validateDropdownSelection(selectElement, fieldName) {
 
 // Security check - validate legitimate client access
 function validateClientAccess() {
+  const SESSION_KEY = "doctaura_registration_validated";
+  const SESSION_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
+  // Check if we already validated this session (handles Keycloak page reloads during registration)
+  try {
+    const savedValidation = sessionStorage.getItem(SESSION_KEY);
+    if (savedValidation) {
+      const { timestamp, role } = JSON.parse(savedValidation);
+      const isStillValid = Date.now() - timestamp < SESSION_EXPIRY_MS;
+      if (isStillValid) {
+        console.log("Using cached validation - registration enabled (role:", role, ")");
+        return true;
+      } else {
+        // Expired, remove it
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read cached validation:", e);
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const clientId = urlParams.get("client_id");
   const codeChallenge = urlParams.get("code_challenge");
@@ -135,6 +156,16 @@ function validateClientAccess() {
       "Unauthorized registration attempt detected - missing required PKCE parameters"
     );
     return false;
+  }
+
+  // Cache the successful validation for subsequent page loads during registration
+  try {
+    sessionStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ timestamp: Date.now(), role: kcRole })
+    );
+  } catch (e) {
+    console.warn("Could not cache validation:", e);
   }
 
   console.log("Legitimate client request validated - registration enabled");
@@ -464,10 +495,11 @@ function setupCascadingDropdowns() {
 }
 
 function initializeRole() {
+  const SESSION_KEY = "doctaura_registration_validated";
   const urlParams = new URLSearchParams(window.location.search);
   let role = urlParams.get("kc_role");
 
-  // Fallback: extract role from state parameter if kc_role is not available
+  // Fallback 1: extract role from state parameter if kc_role is not available
   if (!role) {
     const stateParam = urlParams.get("state");
     if (stateParam) {
@@ -479,6 +511,21 @@ function initializeRole() {
       } catch (e) {
         console.warn("Could not parse state parameter for role:", e);
       }
+    }
+  }
+
+  // Fallback 2: get role from sessionStorage (for page reloads during registration)
+  if (!role) {
+    try {
+      const savedValidation = sessionStorage.getItem(SESSION_KEY);
+      if (savedValidation) {
+        const { role: cachedRole } = JSON.parse(savedValidation);
+        if (cachedRole) {
+          role = cachedRole;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read cached role:", e);
     }
   }
 
