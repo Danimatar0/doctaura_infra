@@ -143,7 +143,7 @@
 
       // Use mock data as fallback
       try {
-        const mockResponse = await fetch("../resources/mock_data/mock_countries.json");
+        const mockResponse = await fetch("../mock_data/mock_countries.json");
         const countries = await mockResponse.json();
 
         countrySelect.innerHTML = '<option value="">Select Country</option>';
@@ -193,7 +193,7 @@
 
       // Use mock data as fallback
       try {
-        const mockResponse = await fetch("../resources/mock_data/mock_specialties.json");
+        const mockResponse = await fetch("../mock_data/mock_specialties.json");
         const specialties = await mockResponse.json();
 
         specialtySelect.innerHTML = '<option value="">Select Specialty</option>';
@@ -244,7 +244,7 @@
 
       // Use mock data as fallback
       try {
-        const mockResponse = await fetch("../resources/mock_data/mock_governorates.json");
+        const mockResponse = await fetch("../mock_data/mock_governorates.json");
         const governorates = await mockResponse.json();
 
         governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
@@ -313,7 +313,7 @@
 
       // Use mock data as fallback
       try {
-        const mockResponse = await fetch("../resources/mock_data/mock_districts.json");
+        const mockResponse = await fetch("../mock_data/mock_districts.json");
         const allDistricts = await mockResponse.json();
 
         // Filter districts by parentId (governorateId)
@@ -389,7 +389,7 @@
 
       // Use mock data as fallback
       try {
-        const mockResponse = await fetch("../resources/mock_data/mock_localities.json");
+        const mockResponse = await fetch("../mock_data/mock_localities.json");
         const allLocalities = await mockResponse.json();
 
         // Filter localities by parentId (districtId)
