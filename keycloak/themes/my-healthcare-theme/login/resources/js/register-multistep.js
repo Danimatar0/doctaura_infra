@@ -14,18 +14,18 @@ const USE_MOCK_DATA = window.DoctauraConfig?.features?.useMockData || false;
 const ENABLE_DEBUG = window.DoctauraConfig?.features?.enableDebugLogs || false;
 
 // Helper function for logging
-  function debugLog(message, data) {
-    if (ENABLE_DEBUG) {
-      if (data) {
-        console.log(`[Doctaura Registration] ${message}`, data);
-      } else {
-        console.log(`[Doctaura Registration] ${message}`);
-      }
+function debugLog(message, data) {
+  if (ENABLE_DEBUG) {
+    if (data) {
+      console.log(`[Doctaura Registration] ${message}`, data);
+    } else {
+      console.log(`[Doctaura Registration] ${message}`);
     }
   }
+}
 
-  // Input validation and sanitization
-  function sanitizeDropdownValue(value) {
+// Input validation and sanitization
+function sanitizeDropdownValue(value) {
     // Remove any non-numeric characters except empty string
     if (!value || value === "") return "";
     const sanitized = value.toString().replace(/[^0-9]/g, "");
@@ -71,45 +71,55 @@ const ENABLE_DEBUG = window.DoctauraConfig?.features?.enableDebugLogs || false;
     return true;
   }
 
-  // Security check - validate legitimate client access
-  function validateClientAccess() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const clientId = urlParams.get("client_id");
-    const codeChallenge = urlParams.get("code_challenge");
-    const kcRole = urlParams.get("kc_role");
-    const ALLOWED_CLIENTS = ["doctaura-app"];
-    const isAllowedClient = ALLOWED_CLIENTS.includes(clientId);
+// Security check - validate legitimate client access
+function validateClientAccess() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const clientId = urlParams.get("client_id");
+  const codeChallenge = urlParams.get("code_challenge");
+  const kcRole = urlParams.get("kc_role");
+  const ALLOWED_CLIENTS = ["doctaura-app"];
+  const isAllowedClient = ALLOWED_CLIENTS.includes(clientId);
 
-    // Check if this is a legitimate client application request
-    // Must have client_id, code_challenge (PKCE), and kc_role
-    const isLegitimateClientRequest = clientId && codeChallenge && kcRole && isAllowedClient;
+  // Log all parameters for debugging
+  console.log("[Doctaura Registration] Validating client access:", {
+    clientId,
+    hasCodeChallenge: !!codeChallenge,
+    kcRole,
+    isAllowedClient,
+    allParams: Object.fromEntries(urlParams)
+  });
 
-    if (!isLegitimateClientRequest) {
-      // Hide registration form
-      const registrationContainer = document.getElementById(
-        "registration-form-container"
-      );
-      if (registrationContainer) {
-        registrationContainer.style.display = "none";
-      }
+  // Check if this is a legitimate client application request
+  // Must have client_id and kc_role (code_challenge only present during OAuth flow)
+  const isLegitimateClientRequest = clientId && kcRole && isAllowedClient;
 
-      // Show unauthorized access message
-      const unauthorizedContainer = document.getElementById(
-        "unauthorized-access"
-      );
-      if (unauthorizedContainer) {
-        unauthorizedContainer.style.display = "block";
-      }
-
-      console.error(
-        "Unauthorized registration attempt detected - missing required PKCE parameters"
-      );
-      return false;
+  if (!isLegitimateClientRequest) {
+    // Hide registration form
+    const registrationContainer = document.getElementById(
+      "registration-form-container"
+    );
+    if (registrationContainer) {
+      registrationContainer.style.display = "none";
     }
 
-    console.log("Legitimate client request validated - registration enabled");
-    return true;
+    // Show unauthorized access message
+    const unauthorizedContainer = document.getElementById(
+      "unauthorized-access"
+    );
+    if (unauthorizedContainer) {
+      unauthorizedContainer.style.display = "block";
+    }
+
+    console.error(
+      "[Doctaura Registration] Unauthorized registration attempt - missing required parameters:",
+      { clientId, kcRole, isAllowedClient }
+    );
+    return false;
   }
+
+  console.log("[Doctaura Registration] Legitimate client request validated - registration enabled");
+  return true;
+}
 
   async function loadCountries() {
     const countrySelect = document.querySelector(
