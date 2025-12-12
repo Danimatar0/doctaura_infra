@@ -313,8 +313,8 @@
         <!-- Include configuration first -->
         <script src="${url.resourcesPath}/js/config.js"></script>
 
-        <!-- Include the registration JavaScript -->
-        <script src="${url.resourcesPath}/js/register-multistep.js"></script>
+        <!-- Include the registration JavaScript as ES6 module -->
+        <script type="module" src="${url.resourcesPath}/js/register-multistep.js"></script>
 
     </#if>
 </@layout.registrationLayout>
