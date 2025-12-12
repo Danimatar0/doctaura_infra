@@ -181,15 +181,37 @@
                         </select>
                     </div>
 
-                    <!-- Address -->
+                    <!-- Governorate, District, Locality (Cascading Dropdowns) -->
                     <div style="margin-bottom: 1.25rem;">
                         <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                            Address (Optional)
+                            Governorate (Optional)
                         </label>
-                        <textarea name="user.attributes.address" 
-                                  rows="3"
-                                  placeholder="Street address, City, Postal Code"
-                                  style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; resize: vertical; font-family: inherit;"></textarea>
+                        <select id="governorate-select" name="user.attributes.governorateId"
+                                style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;">
+                            <option value="">Select Governorate</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                            District (Optional)
+                        </label>
+                        <select id="district-select" name="user.attributes.districtId"
+                                style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;"
+                                disabled>
+                            <option value="">Select Governorate First</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                            Locality (Optional)
+                        </label>
+                        <select id="locality-select" name="user.attributes.localityId"
+                                style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;"
+                                disabled>
+                            <option value="">Select District First</option>
+                        </select>
                     </div>
                 </div>
 
@@ -288,8 +310,11 @@
             </form>
         </div>
 
+        <!-- Include configuration first -->
+        <script src="${url.resourcesPath}/js/config.js"></script>
+
         <!-- Include the registration JavaScript -->
-        <script src="${url.resourcesPath}/js/register.js"></script>
+        <script src="${url.resourcesPath}/js/register-multistep.js"></script>
 
     </#if>
 </@layout.registrationLayout>

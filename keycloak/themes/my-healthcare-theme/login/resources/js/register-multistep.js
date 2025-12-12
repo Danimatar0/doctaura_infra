@@ -5,34 +5,68 @@
   let currentStep = 1;
   const totalSteps = 3;
 
-  // Configuration - Update this URL to your API
-  const API_BASE_URL = "https://your-dotnet-api.onrender.com/api/public";
+  // Configuration - Load from config.js (window.DoctauraConfig)
+  const API_BASE_URL = window.DoctauraConfig?.apiBaseUrl || "https://your-dotnet-api.onrender.com/api/public";
+  const USE_MOCK_DATA = window.DoctauraConfig?.features?.useMockData || false;
+  const ENABLE_DEBUG = window.DoctauraConfig?.features?.enableDebugLogs || false;
 
-  // Fallback data if API fails
-  const fallbackCountries = [
-    { id: 1, name: "Lebanon", code: "LB" },
-    { id: 2, name: "United States", code: "US" },
-    { id: 3, name: "United Kingdom", code: "GB" },
-    { id: 4, name: "Canada", code: "CA" },
-    { id: 5, name: "Australia", code: "AU" },
-    { id: 6, name: "Germany", code: "DE" },
-    { id: 7, name: "France", code: "FR" },
-    { id: 8, name: "United Arab Emirates", code: "AE" },
-    { id: 9, name: "Saudi Arabia", code: "SA" },
-  ];
+  // Helper function for logging
+  function debugLog(message, data) {
+    if (ENABLE_DEBUG) {
+      if (data) {
+        console.log(`[Doctaura Registration] ${message}`, data);
+      } else {
+        console.log(`[Doctaura Registration] ${message}`);
+      }
+    }
+  }
 
-  const fallbackSpecialties = [
-    { id: 1, name: "General Practice" },
-    { id: 2, name: "Internal Medicine" },
-    { id: 3, name: "Pediatrics" },
-    { id: 4, name: "Cardiology" },
-    { id: 5, name: "Dermatology" },
-    { id: 6, name: "Orthopedics" },
-    { id: 7, name: "Neurology" },
-    { id: 8, name: "Psychiatry" },
-    { id: 9, name: "Obstetrics & Gynecology" },
-    // ... minimal fallback list
-  ];
+  // Input validation and sanitization
+  function sanitizeDropdownValue(value) {
+    // Remove any non-numeric characters except empty string
+    if (!value || value === "") return "";
+    const sanitized = value.toString().replace(/[^0-9]/g, "");
+    return sanitized;
+  }
+
+  function validateNumericId(value, fieldName) {
+    if (!value || value === "") return true; // Empty is valid (optional fields)
+
+    const sanitized = sanitizeDropdownValue(value);
+    const numericValue = parseInt(sanitized, 10);
+
+    if (isNaN(numericValue) || numericValue <= 0) {
+      debugLog(`Invalid ${fieldName}: must be a positive number`, value);
+      return false;
+    }
+
+    return true;
+  }
+
+  function validateDropdownSelection(selectElement, fieldName) {
+    if (!selectElement) return false;
+
+    const value = selectElement.value;
+
+    // If empty and field is optional, it's valid
+    if (!value || value === "") return true;
+
+    // Validate it's numeric
+    if (!validateNumericId(value, fieldName)) {
+      return false;
+    }
+
+    // Check if value exists in dropdown options
+    const options = Array.from(selectElement.options);
+    const isValidOption = options.some(opt => opt.value === value);
+
+    if (!isValidOption) {
+      debugLog(`Invalid ${fieldName}: value not in dropdown options`, value);
+      return false;
+    }
+
+    return true;
+  }
 
   // Security check - validate legitimate client access
   function validateClientAccess() {
@@ -81,7 +115,7 @@
     if (!countrySelect) return;
 
     try {
-      // Fetch from your API
+      // Try fetching from API first
       const response = await fetch(`${API_BASE_URL}/countries`, {
         method: "GET",
         headers: {
@@ -96,11 +130,8 @@
       }
 
       const countries = await response.json();
-
-      // Clear existing options except the first "Select Country"
       countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-      // Populate dropdown
       countries.forEach((country) => {
         const option = document.createElement("option");
         option.value = country.id;
@@ -108,16 +139,24 @@
         countrySelect.appendChild(option);
       });
     } catch (error) {
-      console.error("Error loading countries:", error);
+      console.error("Error loading countries from API, using mock data:", error);
 
-      // Use fallback data
-      countrySelect.innerHTML = '<option value="">Select Country</option>';
-      fallbackCountries.forEach((country, index) => {
-        const option = document.createElement("option");
-        option.value = index + 1; // Temporary ID
-        option.textContent = country.name;
-        countrySelect.appendChild(option);
-      });
+      // Use mock data as fallback
+      try {
+        const mockResponse = await fetch("../resources/mock_data/mock_countries.json");
+        const countries = await mockResponse.json();
+
+        countrySelect.innerHTML = '<option value="">Select Country</option>';
+        countries.forEach((country) => {
+          const option = document.createElement("option");
+          option.value = country.id;
+          option.textContent = country.name;
+          countrySelect.appendChild(option);
+        });
+      } catch (mockError) {
+        console.error("Error loading mock countries:", mockError);
+        countrySelect.innerHTML = '<option value="">Error loading countries</option>';
+      }
     }
   }
 
@@ -126,7 +165,7 @@
     if (!specialtySelect) return;
 
     try {
-      // Fetch from your API
+      // Try fetching from API first
       const response = await fetch(`${API_BASE_URL}/specialties`, {
         method: "GET",
         headers: {
@@ -141,11 +180,8 @@
       }
 
       const specialties = await response.json();
-
-      // Clear existing options except the first "Select Specialty"
       specialtySelect.innerHTML = '<option value="">Select Specialty</option>';
 
-      // Populate dropdown
       specialties.forEach((specialty) => {
         const option = document.createElement("option");
         option.value = specialty.id;
@@ -153,15 +189,266 @@
         specialtySelect.appendChild(option);
       });
     } catch (error) {
-      console.error("Error loading specialties:", error);
+      console.error("Error loading specialties from API, using mock data:", error);
 
-      // Use fallback data
-      specialtySelect.innerHTML = '<option value="">Select Specialty</option>';
-      fallbackSpecialties.forEach((specialty) => {
+      // Use mock data as fallback
+      try {
+        const mockResponse = await fetch("../resources/mock_data/mock_specialties.json");
+        const specialties = await mockResponse.json();
+
+        specialtySelect.innerHTML = '<option value="">Select Specialty</option>';
+        specialties.forEach((specialty) => {
+          const option = document.createElement("option");
+          option.value = specialty.id;
+          option.textContent = specialty.name;
+          specialtySelect.appendChild(option);
+        });
+      } catch (mockError) {
+        console.error("Error loading mock specialties:", mockError);
+        specialtySelect.innerHTML = '<option value="">Error loading specialties</option>';
+      }
+    }
+  }
+
+  // Load governorates from API (with fallback to mock data)
+  async function loadGovernorates() {
+    const governorateSelect = document.getElementById("governorate-select");
+    if (!governorateSelect) return;
+
+    try {
+      // Try fetching from API first
+      const response = await fetch(`${API_BASE_URL}/locations/governorates`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status} when fetching governorates`
+        );
+      }
+
+      const governorates = await response.json();
+      governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
+
+      governorates.forEach((governorate) => {
         const option = document.createElement("option");
-        option.value = index + 1; // Temporary ID
-        option.textContent = specialty.name;
-        specialtySelect.appendChild(option);
+        option.value = governorate.id;
+        option.textContent = governorate.name;
+        governorateSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error loading governorates from API, using mock data:", error);
+
+      // Use mock data as fallback
+      try {
+        const mockResponse = await fetch("../resources/mock_data/mock_governorates.json");
+        const governorates = await mockResponse.json();
+
+        governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
+        governorates.forEach((governorate) => {
+          const option = document.createElement("option");
+          option.value = governorate.id;
+          option.textContent = governorate.name;
+          governorateSelect.appendChild(option);
+        });
+      } catch (mockError) {
+        console.error("Error loading mock governorates:", mockError);
+        governorateSelect.innerHTML = '<option value="">Error loading governorates</option>';
+      }
+    }
+  }
+
+  // Load districts based on selected governorate (with fallback to mock data)
+  async function loadDistricts(governorateId) {
+    const districtSelect = document.getElementById("district-select");
+    const localitySelect = document.getElementById("locality-select");
+
+    if (!districtSelect) return;
+
+    // Reset district and locality dropdowns
+    districtSelect.innerHTML = '<option value="">Loading districts...</option>';
+    districtSelect.disabled = true;
+    localitySelect.innerHTML = '<option value="">Select District First</option>';
+    localitySelect.disabled = true;
+
+    if (!governorateId) {
+      districtSelect.innerHTML = '<option value="">Select Governorate First</option>';
+      return;
+    }
+
+    try {
+      // Try fetching from API first
+      const response = await fetch(
+        `${API_BASE_URL}/governorates/${governorateId}/districts`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status} when fetching districts`
+        );
+      }
+
+      const districts = await response.json();
+      districtSelect.innerHTML = '<option value="">Select District</option>';
+
+      districts.forEach((district) => {
+        const option = document.createElement("option");
+        option.value = district.id;
+        option.textContent = district.name;
+        districtSelect.appendChild(option);
+      });
+
+      districtSelect.disabled = false;
+    } catch (error) {
+      console.error("Error loading districts from API, using mock data:", error);
+
+      // Use mock data as fallback
+      try {
+        const mockResponse = await fetch("../resources/mock_data/mock_districts.json");
+        const allDistricts = await mockResponse.json();
+
+        // Filter districts by parentId (governorateId)
+        const districts = allDistricts.filter(
+          (district) => district.parentId === parseInt(governorateId, 10)
+        );
+
+        districtSelect.innerHTML = '<option value="">Select District</option>';
+
+        if (districts.length === 0) {
+          districtSelect.innerHTML = '<option value="">No districts available</option>';
+        } else {
+          districts.forEach((district) => {
+            const option = document.createElement("option");
+            option.value = district.id;
+            option.textContent = district.name;
+            districtSelect.appendChild(option);
+          });
+          districtSelect.disabled = false;
+        }
+      } catch (mockError) {
+        console.error("Error loading mock districts:", mockError);
+        districtSelect.innerHTML = '<option value="">Error loading districts</option>';
+      }
+    }
+  }
+
+  // Load localities based on selected district (with fallback to mock data)
+  async function loadLocalities(districtId) {
+    const localitySelect = document.getElementById("locality-select");
+
+    if (!localitySelect) return;
+
+    localitySelect.innerHTML = '<option value="">Loading localities...</option>';
+    localitySelect.disabled = true;
+
+    if (!districtId) {
+      localitySelect.innerHTML = '<option value="">Select District First</option>';
+      return;
+    }
+
+    try {
+      // Try fetching from API first
+      const response = await fetch(
+        `${API_BASE_URL}/districts/${districtId}/localities`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status} when fetching localities`
+        );
+      }
+
+      const localities = await response.json();
+      localitySelect.innerHTML = '<option value="">Select Locality</option>';
+
+      localities.forEach((locality) => {
+        const option = document.createElement("option");
+        option.value = locality.id;
+        option.textContent = locality.name;
+        localitySelect.appendChild(option);
+      });
+
+      localitySelect.disabled = false;
+    } catch (error) {
+      console.error("Error loading localities from API, using mock data:", error);
+
+      // Use mock data as fallback
+      try {
+        const mockResponse = await fetch("../resources/mock_data/mock_localities.json");
+        const allLocalities = await mockResponse.json();
+
+        // Filter localities by parentId (districtId)
+        const localities = allLocalities.filter(
+          (locality) => locality.parentId === parseInt(districtId, 10)
+        );
+
+        localitySelect.innerHTML = '<option value="">Select Locality</option>';
+
+        if (localities.length === 0) {
+          localitySelect.innerHTML = '<option value="">No localities available</option>';
+        } else {
+          localities.forEach((locality) => {
+            const option = document.createElement("option");
+            option.value = locality.id;
+            option.textContent = locality.name;
+            localitySelect.appendChild(option);
+          });
+          localitySelect.disabled = false;
+        }
+      } catch (mockError) {
+        console.error("Error loading mock localities:", mockError);
+        localitySelect.innerHTML = '<option value="">Error loading localities</option>';
+      }
+    }
+  }
+
+  // Setup cascading dropdown listeners
+  function setupCascadingDropdowns() {
+    const governorateSelect = document.getElementById("governorate-select");
+    const districtSelect = document.getElementById("district-select");
+
+    if (governorateSelect) {
+      governorateSelect.addEventListener("change", function (e) {
+        const governorateId = sanitizeDropdownValue(e.target.value);
+
+        // Validate the selection
+        if (!validateDropdownSelection(governorateSelect, "governorateId")) {
+          // Reset to empty if invalid
+          governorateSelect.value = "";
+          return;
+        }
+
+        loadDistricts(governorateId);
+      });
+    }
+
+    if (districtSelect) {
+      districtSelect.addEventListener("change", function (e) {
+        const districtId = sanitizeDropdownValue(e.target.value);
+
+        // Validate the selection
+        if (!validateDropdownSelection(districtSelect, "districtId")) {
+          // Reset to empty if invalid
+          districtSelect.value = "";
+          return;
+        }
+
+        loadLocalities(districtId);
       });
     }
   }
@@ -393,6 +680,43 @@
       }
     }
 
+    // Validate location dropdowns on step 2
+    if (step === 2) {
+      const governorateSelect = document.getElementById("governorate-select");
+      const districtSelect = document.getElementById("district-select");
+      const localitySelect = document.getElementById("locality-select");
+
+      // Validate governorate if selected
+      if (governorateSelect && governorateSelect.value) {
+        if (!validateDropdownSelection(governorateSelect, "governorateId")) {
+          governorateSelect.style.borderColor = "#ef4444";
+          alert("Invalid governorate selection. Please select a valid option.");
+          return false;
+        }
+        governorateSelect.style.borderColor = "#e5e7eb";
+      }
+
+      // Validate district if selected
+      if (districtSelect && districtSelect.value && !districtSelect.disabled) {
+        if (!validateDropdownSelection(districtSelect, "districtId")) {
+          districtSelect.style.borderColor = "#ef4444";
+          alert("Invalid district selection. Please select a valid option.");
+          return false;
+        }
+        districtSelect.style.borderColor = "#e5e7eb";
+      }
+
+      // Validate locality if selected
+      if (localitySelect && localitySelect.value && !localitySelect.disabled) {
+        if (!validateDropdownSelection(localitySelect, "localityId")) {
+          localitySelect.style.borderColor = "#ef4444";
+          alert("Invalid locality selection. Please select a valid option.");
+          return false;
+        }
+        localitySelect.style.borderColor = "#e5e7eb";
+      }
+    }
+
     // Validate doctor fields on step 3
     if (step === 3) {
       const roleInput = document.getElementById("role-input");
@@ -429,6 +753,60 @@
   // Expose changeStep globally for onclick handlers
   window.changeStep = changeStep;
 
+  // Final form validation before submission
+  function setupFormValidation() {
+    const form = document.getElementById("kc-register-form");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      const governorateSelect = document.getElementById("governorate-select");
+      const districtSelect = document.getElementById("district-select");
+      const localitySelect = document.getElementById("locality-select");
+
+      // Prevent submission if disabled fields have values (manipulation attempt)
+      if (districtSelect && districtSelect.disabled && districtSelect.value) {
+        e.preventDefault();
+        alert("Invalid form state detected. Please refresh and try again.");
+        debugLog("Form manipulation detected: district has value but is disabled");
+        return false;
+      }
+
+      if (localitySelect && localitySelect.disabled && localitySelect.value) {
+        e.preventDefault();
+        alert("Invalid form state detected. Please refresh and try again.");
+        debugLog("Form manipulation detected: locality has value but is disabled");
+        return false;
+      }
+
+      // Final validation of all location dropdowns
+      if (governorateSelect && governorateSelect.value) {
+        if (!validateDropdownSelection(governorateSelect, "governorateId")) {
+          e.preventDefault();
+          alert("Invalid governorate selection.");
+          return false;
+        }
+      }
+
+      if (districtSelect && districtSelect.value && !districtSelect.disabled) {
+        if (!validateDropdownSelection(districtSelect, "districtId")) {
+          e.preventDefault();
+          alert("Invalid district selection.");
+          return false;
+        }
+      }
+
+      if (localitySelect && localitySelect.value && !localitySelect.disabled) {
+        if (!validateDropdownSelection(localitySelect, "localityId")) {
+          e.preventDefault();
+          alert("Invalid locality selection.");
+          return false;
+        }
+      }
+
+      debugLog("Form validation passed - submitting registration");
+    });
+  }
+
   function init() {
     // First, validate client access
     const hasAccess = validateClientAccess();
@@ -441,7 +819,10 @@
     initializeRole(); // Initialize role first
     initializeFileUpload(); // Setup file upload handler
     loadCountries(); // Load countries from API
+    loadGovernorates(); // Load governorates from API
     loadSpecialties(); // Load specialties from API
+    setupCascadingDropdowns(); // Setup cascading dropdown listeners
+    setupFormValidation(); // Setup final form validation
     showStep(1); // Then show first step
   }
 
