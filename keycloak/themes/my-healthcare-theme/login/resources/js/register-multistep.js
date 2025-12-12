@@ -78,19 +78,41 @@ function validateClientAccess() {
   const urlParams = new URLSearchParams(window.location.search);
   const clientId = urlParams.get("client_id");
   const codeChallenge = urlParams.get("code_challenge");
-  const kcRole = urlParams.get("kc_role");
+  let kcRole = urlParams.get("kc_role");
+  const stateParam = urlParams.get("state");
   const ALLOWED_CLIENTS = ["doctaura-app"];
   const isAllowedClient = ALLOWED_CLIENTS.includes(clientId);
+
+  // Try to extract role and validate from state parameter
+  // Keycloak may not pass kc_role and code_challenge directly to the rendered page
+  let hasValidState = false;
+  if (stateParam) {
+    try {
+      const stateData = JSON.parse(stateParam);
+      // Check if state has expected structure from our app
+      if (stateData.role && stateData.timestamp && stateData.nonce) {
+        hasValidState = true;
+        // Use role from state if kc_role is not available
+        if (!kcRole && stateData.role) {
+          kcRole = stateData.role;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not parse state parameter:", e);
+    }
+  }
 
   console.log("clientId: ", clientId);
   console.log("codeChallenge: ", codeChallenge);
   console.log("kcRole: ", kcRole);
+  console.log("hasValidState: ", hasValidState);
   console.log("isAllowedClient: ", isAllowedClient);
 
   // Check if this is a legitimate client application request
-  // Must have client_id, code_challenge (PKCE), and kc_role
+  // Must have: client_id from allowed list AND either (code_challenge + kc_role) OR valid state with role
+  const hasOAuthParams = codeChallenge && kcRole;
   const isLegitimateClientRequest =
-    clientId && codeChallenge && kcRole && isAllowedClient;
+    clientId && isAllowedClient && (hasOAuthParams || (hasValidState && kcRole));
 
   if (!isLegitimateClientRequest) {
     // Hide registration form
@@ -443,9 +465,25 @@ function setupCascadingDropdowns() {
 
 function initializeRole() {
   const urlParams = new URLSearchParams(window.location.search);
-  const role = urlParams.get("kc_role") || "patient";
+  let role = urlParams.get("kc_role");
 
-  // console.log('User desired role:', role);
+  // Fallback: extract role from state parameter if kc_role is not available
+  if (!role) {
+    const stateParam = urlParams.get("state");
+    if (stateParam) {
+      try {
+        const stateData = JSON.parse(stateParam);
+        if (stateData.role) {
+          role = stateData.role;
+        }
+      } catch (e) {
+        console.warn("Could not parse state parameter for role:", e);
+      }
+    }
+  }
+
+  // Default to patient if no role found
+  role = role || "patient";
 
   // Update hidden input
   const roleInput = document.getElementById("role-input");
