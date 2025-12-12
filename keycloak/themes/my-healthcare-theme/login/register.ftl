@@ -26,6 +26,16 @@
 
         <!-- Main Registration Form - Will be hidden if unauthorized -->
         <div id="registration-form-container">
+
+            <!-- Display Keycloak Error Messages -->
+            <#if message?has_content && (message.type == 'error' || message.type == 'warning')>
+                <div style="padding: 1rem; margin-bottom: 1.5rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem;">
+                    <p style="color: #dc2626; margin: 0; font-size: 0.875rem;">
+                        <strong>Error:</strong> ${kcSanitize(message.summary)?no_esc}
+                    </p>
+                </div>
+            </#if>
+
             <!-- Role Header -->
             <div style="text-align: center; margin-bottom: 2rem;">
                 <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #0891b2, #06b6d4); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
