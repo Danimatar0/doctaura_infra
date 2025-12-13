@@ -29,9 +29,14 @@
 
             <!-- Display Keycloak Error Messages -->
             <#if message?has_content && (message.type == 'error' || message.type == 'warning')>
-                <div style="padding: 1rem; margin-bottom: 1.5rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem;">
-                    <p style="color: #dc2626; margin: 0; font-size: 0.875rem;">
-                        <strong>Error:</strong> ${kcSanitize(message.summary)?no_esc}
+                <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="flex-shrink: 0; margin-top: 1px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p style="color: #92400e; margin: 0; font-size: 0.875rem; line-height: 1.5;">
+                        ${kcSanitize(message.summary)?no_esc}
                     </p>
                 </div>
             </#if>

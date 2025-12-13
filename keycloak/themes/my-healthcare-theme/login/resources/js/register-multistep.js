@@ -123,12 +123,6 @@ function validateClientAccess() {
     }
   }
 
-  console.log("clientId: ", clientId);
-  console.log("codeChallenge: ", codeChallenge);
-  console.log("kcRole: ", kcRole);
-  console.log("hasValidState: ", hasValidState);
-  console.log("isAllowedClient: ", isAllowedClient);
-
   // Check if this is a legitimate client application request
   // Must have: client_id from allowed list AND either (code_challenge + kc_role) OR valid state with role
   const hasOAuthParams = codeChallenge && kcRole;
