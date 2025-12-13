@@ -41,7 +41,7 @@ function validateNumericId(value, fieldName) {
   const numericValue = parseInt(sanitized, 10);
 
   if (isNaN(numericValue) || numericValue <= 0) {
-    debugLog(`Invalid ${fieldName}: must be a positive number`, value);
+    // debugLog(`Invalid ${fieldName}: must be a positive number`, value);
     return false;
   }
 
@@ -66,7 +66,7 @@ function validateDropdownSelection(selectElement, fieldName) {
   const isValidOption = options.some((opt) => opt.value === value);
 
   if (!isValidOption) {
-    debugLog(`Invalid ${fieldName}: value not in dropdown options`, value);
+    // debugLog(`Invalid ${fieldName}: value not in dropdown options`, value);
     return false;
   }
 
@@ -162,7 +162,7 @@ function validateClientAccess() {
     console.warn("Could not cache validation:", e);
   }
 
-  console.log("Legitimate client request validated - registration enabled");
+  // console.log("Legitimate client request validated - registration enabled");
   return true;
 }
 
@@ -207,7 +207,7 @@ async function loadCountries() {
       option.textContent = country.name;
       countrySelect.appendChild(option);
     });
-    debugLog("Loaded countries from inline mock data", MOCK_COUNTRIES);
+    // debugLog("Loaded countries from inline mock data", MOCK_COUNTRIES);
   }
 }
 
@@ -253,7 +253,7 @@ async function loadSpecialties() {
       option.textContent = specialty.name;
       specialtySelect.appendChild(option);
     });
-    debugLog("Loaded specialties from inline mock data", MOCK_SPECIALTIES);
+    // debugLog("Loaded specialties from inline mock data", MOCK_SPECIALTIES);
   }
 }
 
@@ -302,7 +302,7 @@ async function loadGovernorates() {
       option.textContent = governorate.name;
       governorateSelect.appendChild(option);
     });
-    debugLog("Loaded governorates from inline mock data", MOCK_GOVERNORATES);
+    // debugLog("Loaded governorates from inline mock data", MOCK_GOVERNORATES);
   }
 }
 
@@ -377,7 +377,7 @@ async function loadDistricts(governorateId) {
       });
       districtSelect.disabled = false;
     }
-    debugLog("Loaded districts from inline mock data", districts);
+    // debugLog("Loaded districts from inline mock data", districts);
   }
 }
 
@@ -448,7 +448,7 @@ async function loadLocalities(districtId) {
       });
       localitySelect.disabled = false;
     }
-    debugLog("Loaded localities from inline mock data", localities);
+    // debugLog("Loaded localities from inline mock data", localities);
   }
 }
 
@@ -628,7 +628,7 @@ function initializeFileUpload() {
         }
 
         fileError.style.display = "none";
-        console.log("File uploaded successfully:", file.name);
+        // console.log("File uploaded successfully:", file.name);
       };
 
       reader.onerror = function () {
@@ -834,18 +834,18 @@ function setupFormValidation() {
     if (districtSelect && districtSelect.disabled && districtSelect.value) {
       e.preventDefault();
       alert("Invalid form state detected. Please refresh and try again.");
-      debugLog(
-        "Form manipulation detected: district has value but is disabled"
-      );
+      // debugLog(
+      //   "Form manipulation detected: district has value but is disabled"
+      // );
       return false;
     }
 
     if (localitySelect && localitySelect.disabled && localitySelect.value) {
       e.preventDefault();
       alert("Invalid form state detected. Please refresh and try again.");
-      debugLog(
-        "Form manipulation detected: locality has value but is disabled"
-      );
+      // debugLog(
+      //   "Form manipulation detected: locality has value but is disabled"
+      // );
       return false;
     }
 
@@ -874,7 +874,7 @@ function setupFormValidation() {
       }
     }
 
-    debugLog("Form validation passed - submitting registration");
+    // debugLog("Form validation passed - submitting registration");
   });
 }
 
