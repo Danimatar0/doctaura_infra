@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','email','firstName','lastName','password','password-confirm'); section>
+<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','email','user.attributes.phone','firstName','lastName','password','password-confirm'); section>
     
     <#if section = "form">
 
@@ -106,9 +106,21 @@
                         <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                             <span style="color: #ef4444;">*</span> Email
                         </label>
-                        <input type="email" id="email" name="email" 
-                               value="${(register.formData.email!'')}" 
-                               style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;" 
+                        <input type="email" id="email" name="email"
+                               value="${(register.formData.email!'')}"
+                               style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;"
+                               required />
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                            <span style="color: #ef4444;">*</span> Phone Number
+                        </label>
+                        <input type="tel" id="phone" name="user.attributes.phone"
+                               value="${(register.formData['user.attributes.phone']!'')}"
+                               placeholder="+1234567890"
+                               style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 2px solid #e5e7eb; border-radius: 0.5rem;"
                                required />
                     </div>
 

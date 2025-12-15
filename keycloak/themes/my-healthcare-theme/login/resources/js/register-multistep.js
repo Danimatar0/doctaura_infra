@@ -726,6 +726,7 @@ function validateStep(step) {
 
   if (step === 1) {
     const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
     const password = document.getElementById("password");
     const passwordConfirm = document.getElementById("password-confirm");
 
@@ -734,6 +735,16 @@ function validateStep(step) {
       if (!emailRegex.test(email.value)) {
         email.style.borderColor = "#ef4444";
         alert("Please enter a valid email address");
+        return false;
+      }
+    }
+
+    if (phone && phone.value) {
+      // Basic phone validation: allows +, digits, spaces, dashes, parentheses
+      const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]*$/;
+      if (!phoneRegex.test(phone.value) || phone.value.replace(/\D/g, '').length < 7) {
+        phone.style.borderColor = "#ef4444";
+        alert("Please enter a valid phone number");
         return false;
       }
     }
