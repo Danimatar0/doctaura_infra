@@ -15,6 +15,45 @@ const API_BASE_URL =
 const USE_MOCK_DATA = window.DoctauraConfig?.features?.useMockData || false;
 const ENABLE_DEBUG = window.DoctauraConfig?.features?.enableDebugLogs || false;
 
+// Locale/Language configuration
+const LOCALE_STORAGE_KEY = "doctaura_locale";
+const DEFAULT_LOCALE = "en";
+
+// Get current locale from sessionStorage or default
+function getCurrentLocale() {
+  try {
+    return sessionStorage.getItem(LOCALE_STORAGE_KEY) || DEFAULT_LOCALE;
+  } catch (e) {
+    return DEFAULT_LOCALE;
+  }
+}
+
+// Save locale to sessionStorage
+function setCurrentLocale(locale) {
+  try {
+    sessionStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch (e) {
+    console.warn("Could not save locale to sessionStorage:", e);
+  }
+}
+
+// Setup locale dropdown listener
+function setupLocaleSelector() {
+  const localeSelect = document.getElementById("locale-select");
+  if (!localeSelect) return;
+
+  // Initialize sessionStorage with current dropdown value
+  setCurrentLocale(localeSelect.value);
+
+  localeSelect.addEventListener("change", function (e) {
+    const newLocale = e.target.value;
+    setCurrentLocale(newLocale);
+
+    // Reload countries with new locale
+    loadCountries();
+  });
+}
+
 // Helper function for logging
 function debugLog(message, data) {
   if (ENABLE_DEBUG) {
@@ -172,12 +211,16 @@ async function loadCountries() {
   );
   if (!countrySelect) return;
 
+  // Get current locale for Accept-Language header
+  const currentLocale = getCurrentLocale();
+
   try {
     // Try fetching from API first
-    const response = await fetch(`${API_BASE_URL}/countries`, {
+    const response = await fetch(`${API_BASE_URL}/Locations/countries`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        "Accept-Language": currentLocale,
       },
     });
 
@@ -187,6 +230,7 @@ async function loadCountries() {
       );
     }
 
+    // Response format: [{ id, code, name, phoneCode }]
     const countries = await response.json();
     countrySelect.innerHTML = '<option value="">Select Country</option>';
 
@@ -194,6 +238,9 @@ async function loadCountries() {
       const option = document.createElement("option");
       option.value = country.id;
       option.textContent = country.name;
+      // Store additional data as data attributes for potential use
+      option.dataset.code = country.code;
+      option.dataset.phoneCode = country.phoneCode;
       countrySelect.appendChild(option);
     });
   } catch (error) {
@@ -898,6 +945,7 @@ function init() {
     return; // Stop initialization if access is not legitimate
   }
 
+  setupLocaleSelector(); // Setup locale dropdown and sessionStorage
   initializeRole(); // Initialize role first
   initializeFileUpload(); // Setup file upload handler
   loadCountries(); // Load countries from API

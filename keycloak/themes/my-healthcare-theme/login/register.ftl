@@ -27,6 +27,25 @@
         <!-- Main Registration Form - Will be hidden if unauthorized -->
         <div id="registration-form-container">
 
+            <!-- Language Selector -->
+            <#if realm.internationalizationEnabled && locale.supported?size gt 1>
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <select id="locale-select"
+                                style="padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fff; color: #374151; cursor: pointer;">
+                            <#list locale.supported as l>
+                                <option value="${l.languageTag}" <#if l.languageTag == locale.currentLanguageTag>selected</#if>>${l.label}</option>
+                            </#list>
+                        </select>
+                    </div>
+                </div>
+            </#if>
+
             <!-- Display Keycloak Error Messages -->
             <#if message?has_content && (message.type == 'error' || message.type == 'warning')>
                 <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 0.5rem;">
