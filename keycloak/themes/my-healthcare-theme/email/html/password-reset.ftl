@@ -1,6 +1,10 @@
 <#import "template.ftl" as layout>
+
+<#-- Build Doctaura frontend link with token -->
+<#assign token = link?split("key=")?last?split("&")?first>
+<#assign doctauraLink = msg("frontendResetPasswordUrl") + "?token=" + token>
+
 <@layout.emailLayout>
-    
     <@layout.paragraph>
         ${kcSanitize(msg("passwordResetIntro"))?no_esc}
     </@layout.paragraph>
@@ -9,7 +13,7 @@
         ${kcSanitize(msg("passwordResetBody"))?no_esc}
     </@layout.paragraph>
     
-    <@layout.button url=link text=kcSanitize(msg("passwordResetButton"))?no_esc />
+    <@layout.button url=doctauraLink text=kcSanitize(msg("passwordResetButton"))?no_esc />
     
     <@layout.warningBox>
         <@layout.sectionTitle>${kcSanitize(msg("passwordResetSecurityTips"))?no_esc}</@layout.sectionTitle>
@@ -27,6 +31,5 @@
         ${kcSanitize(msg("passwordResetNotRequested"))?no_esc}
     </@layout.paragraph>
     
-    <@layout.linkFallback url=link />
-    
+    <@layout.linkFallback url=doctauraLink />
 </@layout.emailLayout>

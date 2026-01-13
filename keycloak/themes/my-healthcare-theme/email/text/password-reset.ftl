@@ -1,10 +1,12 @@
+<#assign doctauraLink = msg("frontendResetPasswordUrl") + "?token=" + link?split("key=")?last?split("&")?first>
+
 ${msg("passwordResetGreeting")}
 
 ${msg("passwordResetIntro")}
 
 ${msg("passwordResetBody")}
 
-${link}
+${doctauraLink}
 
 ${msg("linkExpireNotice", linkExpiration)}
 

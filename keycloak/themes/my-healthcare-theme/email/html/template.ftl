@@ -1,3 +1,17 @@
+<#-- Extract token from Keycloak link and build Doctaura URL -->
+<#function buildDoctauraLink kcLink baseUrl>
+    <#if kcLink?contains("key=")>
+        <#local token = kcLink?split("key=")?last>
+        <#-- Remove any trailing parameters -->
+        <#if token?contains("&")>
+            <#local token = token?split("&")?first>
+        </#if>
+        <#return baseUrl + "?token=" + token>
+    <#else>
+        <#return kcLink>
+    </#if>
+</#function>
+
 <#macro emailLayout>
 <!DOCTYPE html>
 <html lang="${locale!'en'}" dir="${(locale?? && locale == 'ar')?then('rtl', 'ltr')}">
@@ -73,7 +87,7 @@
                                             ${kcSanitize(msg("footerAddress"))?no_esc}
                                         </p>
                                         <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0 0;">
-                                            <a href="https://doctaura.com/privacy" style="color: #14B8A6; text-decoration: none;">${kcSanitize(msg("footerPrivacy"))?no_esc}</a>
+                                            <a href="${msg("frontendPrivacyUrl")}" style="color: #14B8A6; text-decoration: none;">${kcSanitize(msg("footerPrivacy"))?no_esc}</a>
                                         </p>
                                     </td>
                                 </tr>

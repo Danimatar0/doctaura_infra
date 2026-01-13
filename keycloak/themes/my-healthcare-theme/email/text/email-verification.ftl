@@ -1,10 +1,12 @@
+<#assign doctauraLink = msg("frontendVerifyEmailUrl") + "?token=" + link?split("key=")?last?split("&")?first>
+
 ${msg("emailVerificationGreeting")}
 
 ${msg("emailVerificationIntro")}
 
 ${msg("emailVerificationBody")}
 
-${link}
+${doctauraLink}
 
 ${msg("linkExpireNotice", linkExpiration)}
 

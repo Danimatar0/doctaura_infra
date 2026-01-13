@@ -1,6 +1,16 @@
 <#import "template.ftl" as layout>
+
+<#-- Determine action type and build appropriate link -->
+<#assign token = link?split("key=")?last?split("&")?first>
+<#if requiredActions?? && requiredActions?seq_contains("UPDATE_PASSWORD")>
+    <#assign doctauraLink = msg("frontendResetPasswordUrl") + "?token=" + token>
+<#elseif requiredActions?? && requiredActions?seq_contains("VERIFY_EMAIL")>
+    <#assign doctauraLink = msg("frontendVerifyEmailUrl") + "?token=" + token>
+<#else>
+    <#assign doctauraLink = msg("frontendCompleteActionUrl") + "?token=" + token>
+</#if>
+
 <@layout.emailLayout>
-    
     <@layout.paragraph>
         ${kcSanitize(msg("executeActionsIntro"))?no_esc}
     </@layout.paragraph>
@@ -19,10 +29,9 @@
         </ul>
     </@layout.infoBox>
     
-    <@layout.button url=link text=kcSanitize(msg("executeActionsButton"))?no_esc />
+    <@layout.button url=doctauraLink text=kcSanitize(msg("executeActionsButton"))?no_esc />
     
     <@layout.expiryNotice expiration=linkExpiration />
     
-    <@layout.linkFallback url=link />
-    
+    <@layout.linkFallback url=doctauraLink />
 </@layout.emailLayout>
